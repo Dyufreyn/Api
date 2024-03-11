@@ -1,0 +1,1575 @@
+openapi: 3.0.3
+info:
+  title: Swagger Dyufreyn
+  description: |-
+      Приложение предоставляет пользователю возможность управлять замком с помощью мобильного устройства. Оно позволяет открывать и закрывать замок, предоставлять возможность доступа для гостей, семьи или коллег, а также отслеживать историю доступа.
+  version: "1.0"
+  contact:
+    email: apiteam@dyufreyn.ru
+servers:
+  - url: https://api.dyufreyn.ru/v1/
+tags:
+  - name: Auth Service
+    description: Сервис для работы с авторизацией, аутентификацией и регистрацией
+  - name: User Service
+    description: Сервис для работы с пользователями
+  - name: Notification service
+    description: Сервис уведомлений
+  - name: Device Service
+    description: Микросервис замков
+  - name: Events Service
+    description: Микросервис эвентов
+  - name: Logger Service
+    description: Микросервис истории уведомлений / взаимодействий с замком
+  - name: Metrics Service
+    description: Микросервис сбора метрик
+paths:
+  /registration:
+    post:
+      tags:
+        - Auth Service
+      summary: Регистрация по логину и паролю
+      operationId: Registration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegistrationRequest'
+      responses:
+        '201':
+          description: Успешная регистрация
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status_code:
+                    type: integer
+                    example: 201
+        '400':
+          description: Переданные параметры не прошли валидацию
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+                
+        '409':
+          description: Неудачная регистрация (почта уже занята)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example: 
+                status_code: 409
+                error: Данная почта уже используется
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example: 
+                status_code: 500
+                error: Ошибка сервера
+  /login:
+    post:
+      tags:
+        - Auth Service
+      summary: Аутентификация по логину и паролю
+      operationId: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Successful login
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status_code:
+                    type: integer
+                    example: 200
+                  response:
+                    $ref: '#/components/schemas/TokensPairResponse'
+        '401':
+          description: Неудачная аутентификация (неверный логин или пароль)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example: 
+                status_code: 401
+                error: Неверный логин или пароль
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example: 
+                status_code: 500
+                error: Ошибка сервера
+  /refresh:
+    post:
+      tags:
+        - Auth Service
+      summary: Обновляет пару токенов
+      operationId: Refresh
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refreshToken:
+                  type: string
+                  example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+                accessToken:
+                  type: string
+                  example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+      security: 
+      - access_token: []
+      responses:
+        '200':
+          description: Успешное валидирование токенов
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status_code:
+                    type: integer
+                    example: 200
+                  response:
+                    $ref: '#/components/schemas/TokensPairResponse'
+        '401':
+          description: Неуспешное обновление токенов (один из токенов не валиден)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example: 
+                status_code: 401
+                error: Невалидный токен
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example: 
+                status_code: 500
+                error: Ошибка сервера
+  /notification:
+    put:
+      tags:
+        - Notification service
+      summary: Добвление токена устройства в сервис
+      operationId: GetDeviceToken
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+                  example: D6abns7hbacv584hd
+      security: 
+        - access_token: []
+      responses:
+        '200':
+          description: Удачное добавление токена устройства
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status_code:
+                    type: integer
+                    example: 200
+        '401':
+          description: Неудачная аутентификация (невалидный токен)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example: 
+                status_code: 401
+                error: Невалидный токен
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example: 
+                status_code: 500
+                error: Ошибка сервера    
+        
+  /invite:
+    post:
+      tags:
+        - Auth Service
+      summary: Регистрация пользователя по коду
+      operationId: Invite
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+                  example: H24B4XC23
+      responses:
+        '200':
+          description: Удачное приглашение пользователя
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status_code:
+                    type: integer
+                    example: 200
+                  response:
+                    $ref: '#/components/schemas/TokensPairResponse'
+        '401':
+          description: Неудачная аутентификация (невалидный токен)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example: 
+                status_code: 401
+                error: Невалидный токен
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example: 
+                status_code: 500
+                error: Ошибка сервера
+  /guests:
+    get:
+      tags:
+        - User Service
+      summary: Получить всехприглашенных пользователей
+      operationId: GetInvitedUsers
+      responses:
+        '200':
+          description: Удачное получение списка пользователей
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status_code:
+                    type: integer
+                    example: 200
+                  response:
+                    $ref: '#/components/schemas/InvitedUsersListResponse'
+                  
+        '401':
+          description: Неудачная аутентификация (невалидный токен)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example: 
+                status_code: 401
+                error: Невалидный токен
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example: 
+                status_code: 500
+                error: Ошибка сервера
+      security: 
+      - access_token: []
+    post:
+      tags:
+        - User Service
+      summary: Создать приглашенного пользователя
+      operationId: createInvitedUSer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  format: regex
+                  pattern: ^[a-zA-Zа-яА-Я\s]+$
+                  example: Vasya
+      responses:
+        '201':
+          description: Удачное создание приглашенного пользователя
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status_code:
+                    type: integer
+                    example: 200
+                  response:
+                    $ref: '#/components/schemas/CreateInvitedUserResponse'
+                  
+        '401':
+          description: Неудачная аутентификация (невалидный токен)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example: 
+                status_code: 401
+                error: Токен недействителен
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example: 
+                status_code: 500
+                error: Ошибка сервера
+      security: 
+      - access_token: []
+  /guests/{guestId}:
+    patch:
+      tags:
+        - User Service
+      summary: Обновить имя приглашенного пользователя
+      operationId: updateUser
+      parameters: 
+        - name: guestId
+          in: path
+          required: true
+          description: Идентификатор пользователя
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EditInvitedUserRequest'
+      responses:
+        '200':
+          description: Успешное обновление
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status_code:
+                    type: integer
+                    example: 200
+        '401':
+          description: Неудачная аутентификация (невалидный токен)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example: 
+                status_code: 401
+                error: Невалидный токен
+        '404':
+          description: Пользователь не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example: 
+                status_code: 404
+                error: Пользователь не найден
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example: 
+                status_code: 500
+                error: Ошибка сервера
+      security: 
+        - access_token: []
+    delete:
+      tags:
+        - User Service
+      summary: Удаление приглашенного пользователя
+      operationId: deleteInvitedUser
+      parameters: 
+        - name: guestId
+          in: path
+          required: true
+          description: Идентификатор пользователя
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Удачное удаление
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status_code:
+                    type: integer
+                    example: 200
+        '401':
+          description: Неудачная аутентификация (невалидный токен)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example: 
+                status_code: 401
+                error: Невалидный токен
+        '404':
+          description: Пользовательне найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example: 
+                status_code: 404
+                error: Пользователь не найден
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example: 
+                status_code: 500
+                error: Ошибка сервера
+      security: 
+        - access_token: []
+  /owners:    
+    delete:
+      tags:
+        - User Service
+      summary: Удалить аккаунт владельца
+      operationId: DeleteOwner
+      responses:
+        '200':
+          description: Успешное удаление
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status_code:
+                    type: integer
+                    example: 200
+        '401':
+          description: Неудачная аутентификация (невалидный токен)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example: 
+                status_code: 500
+                error: Невалидный токен
+        '404':
+          description: Пользователь не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example: 
+                status_code: 404
+                error: Пользователь не найден
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example: 
+                status_code: 500
+                error: Ошибка сервера
+      security: 
+        - access_token: []
+    patch:
+      tags:
+        - User Service
+      summary: Изменение данных о владельце 
+      operationId: EditOwner
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: Vasya
+      responses:
+        '200':
+          description: Успешное изменение
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status_code:
+                    type: integer
+                    example: 200
+        '401':
+          description: Неудачная аутентификация (невалидный токен)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example: 
+                status_code: 500
+                error: Невалидный токен
+        '404':
+          description: Пользователь не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example: 
+                status_code: 404
+                error: Пользователь не найден
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example: 
+                status_code: 500
+                error: Ошибка сервера
+      security: 
+        - access_token: []
+  /device:
+    post:
+      tags:
+        - Device Service
+      summary: Добавить новый замок
+      description: Метод для добавления замка
+      operationId: createDevice
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                cloud_id:
+                  type: string
+                  example: "0000-0000"
+                name:
+                  type: string
+                  example: Замок в спальне
+                settings:
+                  $ref: "#/components/schemas/DeviceSettings"
+      responses:
+        201:
+          description: Успешно
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status_code:
+                    type: integer
+                    format: int64
+                    example: 201
+                  response:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Device"
+                    uniqueItems: true
+        401:
+          description: Ошибка авторизации
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        500:
+          description: Неизвестная серверная ошибка
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        502:
+          description: Брокер Yandex.Cloud отдал неверный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+      security:
+        - access_token: []
+    get:
+      tags:
+        - Device Service
+      summary: Получить все замки пользователя
+      description: Метод для получения всех замков пользователя
+      operationId: getDevices
+      responses:
+        200:
+          description: Успешно
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status_code:
+                    type: integer
+                    format: int64
+                    example: 200
+                  response:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Device"
+                    uniqueItems: true
+        401:
+          description: Ошибка авторизации
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        500:
+          description: Неизвестная серверная ошибка
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+      security:
+        - access_token: []
+
+  /device/{deviceId}:
+    parameters:
+      - $ref: "#/components/parameters/deviceId"
+  
+    get:
+      tags:
+        - Device Service
+      summary: Получить замок по ID
+      description: Метод для получения замка по ID
+      operationId: getDeviceById
+      responses:
+        200:
+          description: Успешно
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status_code: 
+                    type: integer
+                    format: int64
+                    example: 200
+                  response:
+                    $ref: "#/components/schemas/Device"
+        400:
+          description: Переданные параметры не прошли валидацию
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        401:
+          description: Ошибка авторизации
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        404:
+          description: Замок не найден
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        500:
+          description: Неизвестная серверная ошибка
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+      security:
+        - access_token: []
+    patch:
+      tags:
+        - Device Service
+      summary: Изменить информацию о замке
+      description: Метод для изменения информации о замке
+      operationId: editDeviceById
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              description: "Тут нет обязательных полей, изменяется только то, что имеется в теле запроса"
+              properties:
+                name:
+                  type: string
+                  example: Замок в спальне
+                wifi:
+                  type: object
+                  properties:
+                    ssid:
+                      type: string
+                      example: "RT-3921"
+                    password:
+                      type: string
+                      example: "rt918Hkl91"
+                settings:
+                  $ref: "#/components/schemas/DeviceSettings"
+      responses:
+        200:
+          description: Успешно
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status_code: 
+                    type: integer
+                    format: int64
+                    example: 200
+                  response:
+                    $ref: "#/components/schemas/Device"
+        400:
+          description: Переданные параметры не прошли валидацию
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        401:
+          description: Ошибка авторизации
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        404:
+          description: Замок не найден
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        500:
+          description: Неизвестная серверная ошибка
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+      security:
+        - access_token: []
+    delete:
+      tags:
+        - Device Service
+      summary: Удалить замок
+      description: Метод для удаления замка
+      operationId: deleteDeviceById
+      responses:
+        200:
+          description: Успешно
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status_code: 
+                    type: integer
+                    format: int64
+                    example: 200
+                  response:
+                    type: object
+                    properties:
+                      deleted:
+                        type: boolean
+                        example: true
+                      message: 
+                        type: string
+                        example: "Замок успешно удален"
+        400:
+          description: Переданные параметры не прошли валидацию
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        401:
+          description: Ошибка авторизации
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        404:
+          description: Замок не найден
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        500:
+          description: Неизвестная серверная ошибка
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+      security:
+        - access_token: []
+
+  /device/{deviceId}/guests:
+    parameters:
+      - $ref: "#/components/parameters/deviceId"
+          
+    post:
+      tags:
+        - Device Service
+      summary: Выдать пользователю доступ к замку
+      description: Метод для выдачи пользователю доступа к замку
+      operationId: addGuestInDevice
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_id:
+                  type: string
+                  format: uuid
+                role:
+                  type: string
+                  example: "guest"
+      responses:
+        200:
+          description: Успешно
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status_code:
+                    type: integer
+                    format: int64
+                    example: 200
+                  response:
+                    $ref: "#/components/schemas/Guest"
+        400:
+          description: Переданные параметры не прошли валидацию
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        401:
+          description: Ошибка авторизации
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        404:
+          description: Замок или пользователь не найден
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        500:
+          description: Неизвестная серверная ошибка
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+      security:
+        - access_token: []
+    get:
+      tags:
+        - Device Service
+      summary: Получить пользователей у которых есть доступ к замку
+      description: Метод для получения всех пользователей у которых есть доступ к замку
+      operationId: getGuestsInDevice
+      responses:
+        200:
+          description: Успешно
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status_code:
+                    type: integer
+                    format: int64
+                    example: 200
+                  response:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Guest"
+                    uniqueItems: true
+        400:
+          description: Переданные параметры не прошли валидацию
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        401:
+          description: Ошибка авторизации
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        404:
+          description: Замок не найден
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        500:
+          description: Неизвестная серверная ошибка
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+      security:
+        - access_token: []
+
+  /device/{deviceId}/guests/{userId}:      
+    delete:
+      tags:
+        - Device Service
+      summary: Забрать у пользователя доступ к замку
+      description: Метод для того чтобы забрать у пользователя доступ к замку
+      operationId: deleteGuestInDevice
+      parameters:
+        - $ref: "#/components/parameters/deviceId"
+        - name: userId
+          in: path
+          description: ID пользователя
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        200:
+          description: Успешно
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status_code:
+                    type: integer
+                    format: int64
+                    example: 200
+                  response:
+                    type: object
+                    properties:
+                      deleted:
+                        type: boolean
+                        example: true
+                      message: 
+                        type: string
+                        example: "У пользователя отозван доступ к замку"
+        400:
+          description: Переданные параметры не прошли валидацию
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        401:
+          description: Ошибка авторизации
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        404:
+          description: Замок или пользователь не найден
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        500:
+          description: Неизвестная серверная ошибка
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+      security:
+        - access_token: []
+        
+  /events:
+    post:
+      tags:
+        - Events Service
+      summary: Добавить эвент
+      description: Метод для добавления эвента у замка
+      operationId: createEvent
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                device_id:
+                  type: string
+                  format: uuid
+                action:
+                  type: string
+                  example: "state=lock"
+                datetime:
+                  type: integer
+                  format: int64
+                  example: 1709821373
+      responses:
+        201:
+          description: Успешно
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status_code:
+                    type: integer
+                    format: int64
+                    example: 201
+                  response:
+                    $ref: "#/components/schemas/Event"
+        400:
+          description: Переданные параметры не прошли валидацию
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        401:
+          description: Ошибка авторизации
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        404:
+          description: Замок не найден
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        500:
+          description: Неизвестная серверная ошибка
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+      security:
+        - access_token: []
+  /events/device/{deviceId}:
+    get:
+      tags:
+        - Events Service
+      summary: Получить эвента замка
+      description: Метод для получения всех эвентов замка
+      operationId: getEventsByDeviceId
+      parameters:
+        - $ref: "#/components/parameters/deviceId"
+      responses:
+        200:
+          description: Успешно
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status_code:
+                    type: integer
+                    format: int64
+                    example: 200
+                  response:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Event"
+                    uniqueItems: true
+        400:
+          description: Переданные параметры не прошли валидацию
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        401:
+          description: Ошибка авторизации
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        404:
+          description: Замок не найден
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        500:
+          description: Неизвестная серверная ошибка
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+      security:
+        - access_token: []
+        
+  /events/{eventId}:
+    parameters:
+      - name: eventId
+        in: path
+        description: ID эвента
+        required: true
+        schema:
+          type: string
+          format: uuid
+    
+    patch:
+      tags:
+        - Events Service
+      summary: Изменить эвент
+      description: Метод для изменения эвента
+      operationId: editEvent
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              description: "Тут нет обязательных полей, изменяется только то, что имеется в теле запроса"
+              properties:
+                action:
+                  type: string
+                  example: "state=unlock"
+                datetime:
+                  type: integer
+                  format: int64
+                  example: 1709821374
+      responses:
+        200:
+          description: Успешно
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status_code:
+                    type: integer
+                    format: int64
+                    example: 200
+                  response:
+                    $ref: "#/components/schemas/Event"
+        400:
+          description: Переданные параметры не прошли валидацию
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        401:
+          description: Ошибка авторизации
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        404:
+          description: Эвент не найден
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        500:
+          description: Неизвестная серверная ошибка
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+      security:
+        - access_token: []
+    delete:
+      tags:
+        - Events Service
+      summary: Удалить эвент
+      description: Метод для удаления эвента
+      operationId: deleteEvent
+      responses:
+        200:
+          description: Успешно
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status_code:
+                    type: integer
+                    format: int64
+                    example: 200
+                  response:
+                    type: object
+                    properties:
+                      deleted:
+                        type: boolean
+                        example: true
+                      message: 
+                        type: string
+                        example: "Эвент удален"
+        400:
+          description: Переданные параметры не прошли валидацию
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        401:
+          description: Ошибка авторизации
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        404:
+          description: Эвент не найден
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        500:
+          description: Неизвестная серверная ошибка
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+      security:
+        - access_token: []
+  
+  /logger/notifications:
+    get:
+      tags:
+        - Logger Service
+      summary: Получить историю уведомлений
+      description: Метод для получения истории уведомлений
+      operationId: getNotifications
+      responses:
+        200:
+          description: Успешно
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status_code:
+                    type: integer
+                    format: int64
+                    example: 200
+                  response:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Notification"
+                    uniqueItems: true
+        401:
+          description: Ошибка авторизации
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        500:
+          description: Неизвестная серверная ошибка
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+      security:
+        - access_token: []
+        
+  /logger/device/{deviceId}:
+    parameters:
+      - $ref: "#/components/parameters/deviceId"
+    
+    get:
+      tags:
+        - Logger Service
+      summary: Получить историю взаимодействия замка
+      description: Метод для получения истории взаимодействия замка
+      operationId: getDeviceActions
+      responses:
+        200:
+          description: Успешно
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status_code:
+                    type: integer
+                    format: int64
+                    example: 200
+                  response:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/DeviceAction"
+                    uniqueItems: true
+        401:
+          description: Ошибка авторизации
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        500:
+          description: Неизвестная серверная ошибка
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+      security:
+        - access_token: []
+  /metrics/{metricType}:
+    parameters:
+      - name: metricType
+        in: path
+        description: Название метрики
+        required: true
+        schema:
+          type: string
+          format: regex
+          pattern: '^[a-zA-Z0-9_]+$'
+    
+    post:
+      tags:
+        - Metrics Service
+      summary: Записать метрику
+      description: Метод для записи метрики
+      operationId: createMetric
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: object
+                  example: '{"action":"click_menu","menu":3}'
+      responses:
+        200:
+          description: Успешно
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status_code:
+                      type: integer
+                      format: int64
+                      example: 200
+                  response:
+                    type: boolean
+                    example: true
+        401:
+          description: Ошибка авторизации
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        500:
+          description: Неизвестная серверная ошибка
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+      security:
+        - access_token: []
+
+components:
+  parameters:
+    deviceId:
+      name: deviceId
+      in: path
+      description: ID замка
+      required: true
+      schema:
+        type: string
+        format: uuid
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        status_code:
+          type: integer
+          description: дубликат кода ошибки
+        error:
+          type: string
+          example: ошибка при выполнении
+    CreateInvitedUserResponse:
+      type: object
+      properties:
+        code:
+          type: string
+          description: код доступа
+          format: regex
+          pattern: ^[a-zA-Z0-9]{6}$
+          example: H123HGDVd
+        uuid:
+          type: number
+          format: uuid
+          description: uuid нового поользователя
+    RegistrationRequest: 
+      type: object
+      properties:
+        email:
+          type: string
+          example: mymail@mail.ru
+          description: user's mail
+        password:
+          type: string
+          format: email
+          example: MyPasswordIsStrong87654321
+          description: user's password
+        name:
+          type: string
+          format: regex
+          pattern: ^[a-zA-Zа-яА-Я\s]+$
+          example: Antoshka
+          description: username for logging history 
+    LoginRequest: 
+      type: object
+      properties:
+        email:
+          type: string
+          example: mymail@mail.ru
+          description: user's mail
+        password:
+          type: string
+          format: email
+          description: user's 
+    InvitedUsersListResponse: 
+      type: array
+      items:
+        properties:
+          uuid:
+            type: number
+            format: uuid
+            example: 550e8400-e29b-41d4-a716-446655440000
+          name:
+            type: string
+            format: regex
+            pattern: ^[a-zA-Zа-яА-Я\s]+$
+            example: Vasilek
+            description: user's name
+    EditInvitedUserRequest: 
+      type: object
+      properties:
+          name:
+            type: string
+            format: regex
+            pattern: ^[a-zA-Zа-яА-Я\s]+$
+            example: Vasilek
+            description: user's name  
+    TokensPairResponse: 
+      type: object
+      properties:
+        accessToken:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+          description: access token
+        refreshToken:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_123nsg1
+          description: refresh token
+    Guest:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: ID пользователя
+        name:
+          type: string
+          example: "Кирилл К."
+        role:
+          type: string
+          example: "owner"
+    Device:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: ID замка
+        name:
+          type: string
+          example: Замок в спальне
+          description: Название замка для конкретного пользователя
+        current_state:
+          type: boolean
+          example: true
+          description: Состояние замка (true - закрыт, false - открыт)
+        battery_percent:
+          type: integer
+          format: int32
+          example: 100
+          description: Заряд замка в процентах
+        settings:
+          $ref: "#/components/schemas/DeviceSettings"
+    DeviceSettings:
+      type: object
+      properties:
+        state:
+          type: boolean
+          description: Необходимое состояние замка (true - закрыт, false - открыт)
+        notification: 
+          type: boolean
+          description: Необходимость уведомления
+    Event:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        device_id:
+          type: string
+          format: uuid
+        action:
+          type: string
+          example: "state=lock"
+        datetime:
+          type: integer
+          format: int64
+          example: 1709821373
+        created_at:
+          type: integer
+          format: int64
+          example: 1709734973
+    Notification:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        text:
+          type: string
+          example: "Вышла новая версия приложения!"
+        sent_at:
+          type: integer
+          format: int64
+          example: 1709734973
+    DeviceAction:
+      type: object
+      properties:
+          id:
+            type: string
+            format: uuid
+          text:
+            type: string
+            example: "Пользователь Кирилл К. открыл замок"
+          created_at:
+            type: integer
+            format: int64
+            example: 1709734973
+  securitySchemes:
+    access_token:
+      type: apiKey
+      name: Authorization
+      in: header
