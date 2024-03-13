@@ -571,14 +571,18 @@ paths:
       description: Метод для добавления замка
       operationId: createDevice
       requestBody:
+        required: true
         content:
           application/json:
             schema:
               type: object
               properties:
-                cloud_id:
+                cloud_login:
                   type: string
-                  example: "0000-0000"
+                  example: "a44ain1h5i4oopt78dfu"
+                cloud_password:
+                  type: string
+                  example: "curqo1-fufpof-xisgyR"
                 name:
                   type: string
                   example: Замок в спальне
@@ -841,6 +845,7 @@ paths:
       description: Метод для выдачи пользователю доступа к замку
       operationId: addGuestInDevice
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -1014,6 +1019,7 @@ paths:
       description: Метод для добавления эвента у замка
       operationId: createEvent
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -1344,6 +1350,7 @@ paths:
       description: Метод для записи метрики
       operationId: createMetric
       requestBody:
+        required: true
         content:
           application/json:
             schema:
