@@ -1237,6 +1237,59 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
       security:
         - access_token: []
+
+  /events/device/{deviceId}/today:
+    get:
+      tags:
+        - Events Service
+      summary: Получить эвента замка на сегодня
+      description: Метод для получения эвентов замка на сегодня
+      operationId: getTodayEventsByDeviceId
+      parameters:
+        - $ref: "#/components/parameters/deviceId"
+      responses:
+        200:
+          description: Успешно
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status_code:
+                    type: integer
+                    format: int64
+                    example: 200
+                  response:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Event"
+                    uniqueItems: true
+        400:
+          description: Переданные параметры не прошли валидацию
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        401:
+          description: Ошибка авторизации
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        404:
+          description: Замок не найден
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        500:
+          description: Неизвестная серверная ошибка
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+      security:
+        - access_token: []
         
   /events/{eventId}:
     parameters:
@@ -1674,6 +1727,9 @@ components:
         id:
           type: string
           format: uuid
+        title:
+          type: string
+          example: Обновление
         text:
           type: string
           example: "Вышла новая версия приложения!"
@@ -1690,6 +1746,10 @@ components:
           text:
             type: string
             example: "Пользователь Кирилл К. открыл замок"
+          type:
+            type: string
+            example: "open"
+            description: "open - открыт, close - закрыт, calibration - калибровка"
           created_at:
             type: integer
             format: int64
