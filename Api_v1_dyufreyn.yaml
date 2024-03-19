@@ -951,7 +951,7 @@ paths:
       tags:
         - Device Service
       summary: Калибровать замок
-      description: Метод для изменения калибровки замка
+      description: Метод для калибровки замка
       operationId: calibrationDevice
       responses:
         200:
