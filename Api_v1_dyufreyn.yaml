@@ -586,8 +586,6 @@ paths:
                 name:
                   type: string
                   example: Замок в спальне
-                settings:
-                  $ref: "#/components/schemas/DeviceSettings"
       responses:
         201:
           description: Успешно
