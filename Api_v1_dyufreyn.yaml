@@ -660,6 +660,67 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
       security:
         - access_token: []
+        
+  /device/positions:
+    patch:
+      tags:
+        - Device Service
+      summary: Изменить позицию замков
+      description: Метод для изменения позиций замков
+      operationId: editDevicesPosition
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                device_ids:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+                    description: ID замков в отсортированном порядке
+      responses:
+        200:
+          description: Успешно
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status_code: 
+                    type: integer
+                    format: int64
+                    example: 200
+                  response:
+                    type: boolean
+                    example: true
+        400:
+          description: Переданные параметры не прошли валидацию
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        401:
+          description: Ошибка авторизации
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        404:
+          description: Замок не найден
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        500:
+          description: Неизвестная серверная ошибка
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+      security:
+        - access_token: []
 
   /device/{deviceId}:
     parameters:
@@ -685,6 +746,63 @@ paths:
                     example: 200
                   response:
                     $ref: "#/components/schemas/Device"
+        400:
+          description: Переданные параметры не прошли валидацию
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        401:
+          description: Ошибка авторизации
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        404:
+          description: Замок не найден
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        500:
+          description: Неизвестная серверная ошибка
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+      security:
+        - access_token: []
+    put:
+      tags:
+        - Device Service
+      summary: Изменить состояние замка
+      description: Метод для изменения состояния замка
+      operationId: changeDeviceState
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                state:
+                  type: boolean
+                  example: true
+                  description: Состояние замка, которое надо установить (true - закрыт, false - открыт)
+      responses:
+        200:
+          description: Успешно
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status_code: 
+                    type: integer
+                    format: int64
+                    example: 200
+                  response:
+                    type: boolean
+                    example: true
         400:
           description: Переданные параметры не прошли валидацию
           content:
@@ -813,12 +931,6 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
         401:
           description: Ошибка авторизации
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        404:
-          description: Замок не найден
           content:
             application/json:
               schema:
@@ -1516,6 +1628,15 @@ components:
           format: int32
           example: 100
           description: Заряд замка в процентах
+        position:
+          type: integer
+          format: int32
+          example: 0
+          description: Позиция замка в списке
+        device_not_responding:
+          type: boolean
+          example: false
+          description: "true - если замок давно не общался с сервером"
         settings:
           $ref: "#/components/schemas/DeviceSettings"
     DeviceSettings:
