@@ -1001,8 +1001,8 @@ paths:
     put:
       tags:
         - Device Service
-      summary: Калибровать замок
-      description: Метод для калибровки замка
+      summary: Открыть замок через Bluetooth
+      description: Метод для открытия замка через Bluetooth
       operationId: openByBluetooth
       responses:
         200:
