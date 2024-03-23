@@ -1034,6 +1034,16 @@ paths:
       summary: Изменить состояние замка через Bluetooth
       description: Метод для изменения состояния замка через Bluetooth
       operationId: changeStateByBluetooth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                state:
+                  type: boolean
+                  example: true
+                  description: Состояние замка, которое надо установить (true - закрыт, false - открыт)
       responses:
         200:
           description: Успешно
@@ -1823,6 +1833,9 @@ components:
         role:
           type: string
           example: "owner"
+        only_bluetooth:
+          type: boolean
+          example: false
     Device:
       type: object
       properties:
