@@ -815,6 +815,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+        403:
+          description: Нет доступа
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
         404:
           description: Замок не найден
           content:
@@ -882,6 +888,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+        403:
+          description: Нет доступа
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
         404:
           description: Замок не найден
           content:
@@ -935,6 +947,18 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+        403:
+          description: Нет доступа
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        404:
+          description: Замок не найден
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
         500:
           description: Неизвестная серверная ошибка
           content:
@@ -980,6 +1004,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+        403:
+          description: Нет доступа
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
         404:
           description: Замок не найден
           content:
@@ -1001,9 +1031,9 @@ paths:
     put:
       tags:
         - Device Service
-      summary: Открыть замок через Bluetooth
-      description: Метод для открытия замка через Bluetooth
-      operationId: openByBluetooth
+      summary: Изменить состояние замка через Bluetooth
+      description: Метод для изменения состояния замка через Bluetooth
+      operationId: changeStateByBluetooth
       responses:
         200:
           description: Успешно
@@ -1089,6 +1119,12 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
         401:
           description: Ошибка авторизации
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        403:
+          description: Нет доступа
           content:
             application/json:
               schema:
@@ -1206,6 +1242,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+        403:
+          description: Нет доступа
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
         404:
           description: Замок или пользователь не найден
           content:
@@ -1267,6 +1309,12 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
         401:
           description: Ошибка авторизации
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        403:
+          description: Нет доступа
           content:
             application/json:
               schema:
@@ -1447,6 +1495,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+        403:
+          description: Нет доступа
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
         404:
           description: Эвент не найден
           content:
@@ -1496,6 +1550,12 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
         401:
           description: Ошибка авторизации
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        403:
+          description: Нет доступа
           content:
             application/json:
               schema:
@@ -1668,10 +1728,12 @@ components:
       properties:
         status_code:
           type: integer
+          example: 500
           description: дубликат кода ошибки
         error:
           type: string
-          example: ошибка при выполнении
+          example: Internal Server Error
+          description: ошибка при выполнении
     CreateInvitedUserResponse:
       type: object
       properties:
@@ -1790,6 +1852,14 @@ components:
           type: boolean
           example: false
           description: "true - если замок давно не общался с сервером"
+        only_bluetooth:
+          type: boolean
+          example: false
+          description: Может открывать замок только через Bluetooth
+        is_admin:
+          type: boolean
+          example: true
+          description: Имеет доступ к админ-правам
         settings:
           $ref: "#/components/schemas/DeviceSettings"
     DeviceSettings:
