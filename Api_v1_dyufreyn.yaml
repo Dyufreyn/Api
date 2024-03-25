@@ -1107,6 +1107,9 @@ paths:
                 role:
                   type: string
                   example: "guest"
+                only_bluetooth:
+                  type: boolean
+                  example: true
       responses:
         200:
           description: Успешно
