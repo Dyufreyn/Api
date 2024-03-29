@@ -5,9 +5,9 @@ info:
       Приложение предоставляет пользователю возможность управлять замком с помощью мобильного устройства. Оно позволяет открывать и закрывать замок, предоставлять возможность доступа для гостей, семьи или коллег, а также отслеживать историю доступа.
   version: "1.0"
   contact:
-    email: apiteam@dyufreyn.ru
+    email: apiteam@dyufreyn.tech
 servers:
-  - url: https://api.dyufreyn.ru/v1/
+  - url: https://api.dyufreyn.tech/v1/
 tags:
   - name: Auth Service
     description: Сервис для работы с авторизацией, аутентификацией и регистрацией
