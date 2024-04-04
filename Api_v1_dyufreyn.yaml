@@ -1,3 +1,4 @@
+
 openapi: 3.0.3
 info:
   title: Swagger Dyufreyn
@@ -1800,36 +1801,36 @@ components:
         uuid:
           type: number
           format: uuid
-          description: uuid нового поользователя
+          description: uuid нового пользователя
     RegistrationRequest: 
       type: object
       properties:
         email:
           type: string
           example: mymail@mail.ru
-          description: user's mail
+          description: почта пользователя
         password:
           type: string
           format: email
           example: MyPasswordIsStrong87654321
-          description: user's password
+          description: пароль пользователя
         name:
           type: string
           format: regex
           pattern: ^[a-zA-Zа-яА-Я\s]+$
           example: Antoshka
-          description: username for logging history 
+          description: Имя пользователя
     LoginRequest: 
       type: object
       properties:
         email:
           type: string
           example: mymail@mail.ru
-          description: user's mail
+          description: почта пользователя
         password:
           type: string
           format: email
-          description: user's 
+          description: пароль пользователя
     InvitedUsersListResponse: 
       type: array
       items:
@@ -1843,7 +1844,11 @@ components:
             format: regex
             pattern: ^[a-zA-Zа-яА-Я\s]+$
             example: Vasilek
-            description: user's name
+            description: имя пользователя
+          role:
+            type: string
+            example: Admin
+            description: роль пользователя
     EditInvitedUserRequest: 
       type: object
       properties:
@@ -1852,7 +1857,7 @@ components:
             format: regex
             pattern: ^[a-zA-Zа-яА-Я\s]+$
             example: Vasilek
-            description: user's name  
+            description: имя пользователя 
     TokensPairResponse: 
       type: object
       properties:
