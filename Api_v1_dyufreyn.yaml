@@ -54,6 +54,9 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+              example: 
+                status_code: 400
+                error: Не email
                 
         '409':
           description: Неудачная регистрация (почта уже занята)
@@ -98,6 +101,15 @@ paths:
                     example: 200
                   response:
                     $ref: '#/components/schemas/TokensPairResponse'
+        '400':
+          description: Переданные параметры не прошли валидацию
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example: 
+                status_code: 400
+                error: Не email
         '401':
           description: Неудачная аутентификация (неверный логин или пароль)
           content:
@@ -148,6 +160,15 @@ paths:
                     example: 200
                   response:
                     $ref: '#/components/schemas/TokensPairResponse'
+        '400':
+          description: Переданные параметры не прошли валидацию
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example: 
+                status_code: 400
+                error: поле "refreshToken" пустое
         '401':
           description: Неуспешное обновление токенов (один из токенов не валиден)
           content:
@@ -195,6 +216,15 @@ paths:
                   status_code:
                     type: integer
                     example: 200
+        '400':
+          description: Переданные параметры не прошли валидацию
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example: 
+                status_code: 400
+                error: поле "code" пустое
         '401':
           description: Неудачная аутентификация (невалидный токен)
           content:
@@ -243,6 +273,15 @@ paths:
                     example: 200
                   response:
                     $ref: '#/components/schemas/TokensPairResponse'
+        '400':
+          description: Переданные параметры не прошли валидацию
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example: 
+                status_code: 400
+                error: поле "code" пустое
         '401':
           description: Неудачная аутентификация (невалидный токен)
           content:
@@ -317,6 +356,11 @@ paths:
                   format: regex
                   pattern: ^[a-zA-Zа-яА-Я\s]+$
                   example: Vasya
+                role:
+                  type: string
+                  enum:
+                    - Admin
+                    - User
       responses:
         '201':
           description: Удачное создание приглашенного пользователя
@@ -1858,6 +1902,11 @@ components:
             pattern: ^[a-zA-Zа-яА-Я\s]+$
             example: Vasilek
             description: имя пользователя 
+          role:
+              type: string
+              enum:
+                  - Admin
+                  - User
     TokensPairResponse: 
       type: object
       properties:
