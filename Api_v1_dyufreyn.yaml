@@ -1,4 +1,3 @@
-
 openapi: 3.0.3
 info:
   title: Swagger Dyufreyn
@@ -304,7 +303,7 @@ paths:
     get:
       tags:
         - User Service
-      summary: Получить всехприглашенных пользователей
+      summary: Получить всех приглашенных пользователей
       operationId: GetInvitedUsers
       responses:
         '200':
@@ -1152,7 +1151,7 @@ paths:
                   response:
                     type: array
                     items:
-                      $ref: "#/components/schemas/Device"
+                      $ref: "#/components/schemas/GuestDevices"
                     uniqueItems: true
         401:
           description: Ошибка авторизации
@@ -1172,74 +1171,6 @@ paths:
     parameters:
       - $ref: "#/components/parameters/deviceId"
           
-    post:
-      tags:
-        - Device Service
-      summary: Выдать пользователю доступ к замку
-      description: Метод для выдачи пользователю доступа к замку
-      operationId: addGuestInDevice
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                user_id:
-                  type: string
-                  format: uuid
-                role:
-                  type: string
-                  example: "guest"
-                only_bluetooth:
-                  type: boolean
-                  example: true
-      responses:
-        200:
-          description: Успешно
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status_code:
-                    type: integer
-                    format: int64
-                    example: 200
-                  response:
-                    $ref: "#/components/schemas/Guest"
-        400:
-          description: Переданные параметры не прошли валидацию
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        401:
-          description: Ошибка авторизации
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        403:
-          description: Нет доступа
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        404:
-          description: Замок или пользователь не найден
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        500:
-          description: Неизвестная серверная ошибка
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-      security:
-        - access_token: []
     get:
       tags:
         - Device Service
@@ -1294,6 +1225,68 @@ paths:
         - $ref: "#/components/parameters/deviceId"
         - $ref: "#/components/parameters/userId"
         
+    patch:
+      tags:
+        - Device Service
+      summary: Выдать / изменить пользователю доступ к замку
+      description: Метод для выдачи / изменения пользователю доступа к замку
+      operationId: changeGuestInDevice
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                only_bluetooth:
+                  type: boolean
+                  example: true
+      responses:
+        200:
+          description: Успешно
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status_code:
+                    type: integer
+                    format: int64
+                    example: 200
+                  response:
+                    $ref: "#/components/schemas/Guest"
+        400:
+          description: Переданные параметры не прошли валидацию
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        401:
+          description: Ошибка авторизации
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        403:
+          description: Нет доступа
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        404:
+          description: Замок или пользователь не найден
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        500:
+          description: Неизвестная серверная ошибка
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+      security:
+        - access_token: []
     delete:
       tags:
         - Device Service
@@ -1918,6 +1911,22 @@ components:
           type: string
           example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_123nsg1
           description: refresh token
+    GuestDevices:
+      type: object
+      properties:
+          id:
+            type: string
+            format: uuid
+            description: ID замка
+          name:
+            type: string
+            example: "В спальне"
+          available:
+            type: boolean
+            example: true
+          only_bluetooth:
+            type: boolean
+            example: false
     Guest:
       type: object
       properties:
@@ -1931,6 +1940,9 @@ components:
         role:
           type: string
           example: "owner"
+        available:
+          type: boolean
+          example: true
         only_bluetooth:
           type: boolean
           example: false
