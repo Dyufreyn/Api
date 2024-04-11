@@ -1009,6 +1009,72 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
       security:
         - access_token: []
+  /device/{deviceId}/sync:  
+    parameters:
+      - $ref: "#/components/parameters/deviceId"
+      
+    put:
+      tags:
+        - Device Service
+      summary: Синхронизировать замок
+      description: Метод для синхронизации замка
+      operationId: syncDevice
+      responses:
+        200:
+          description: Успешно
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status_code: 
+                    type: integer
+                    format: int64
+                    example: 200
+                  response:
+                    type: object
+                    properties:
+                      success:
+                        type: boolean
+                        example: true
+        400:
+          description: Переданные параметры не прошли валидацию
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        401:
+          description: Ошибка авторизации
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        403:
+          description: Нет доступа
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        404:
+          description: Замок не найден
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        500:
+          description: Неизвестная серверная ошибка
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        502:
+          description: Не удалось связаться с замком
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+      security:
+        - access_token: []
   /device/{deviceId}/calibration:  
     parameters:
       - $ref: "#/components/parameters/deviceId"
@@ -1957,6 +2023,10 @@ components:
           type: string
           example: Замок в спальне
           description: Название замка для конкретного пользователя
+        mac:
+          type: string
+          example: 00-B0-D0-63-C2-26
+          description: Bluetooth MAC адрес устройства
         current_state:
           type: boolean
           example: true
