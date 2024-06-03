@@ -905,6 +905,64 @@ paths:
       security:
         - access_token: []
 
+  /device/mac:
+    post:
+      tags:
+        - Device Service
+      summary: Проверить, есть ли замок с таким MAC-адресом в БД
+      description: Метод для проверки, есть ли замок с таким MAC-адресом в БД
+      operationId: findDeviceByMac
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                mac:
+                  type: string
+                  example: "40:57:D0:A9:7F:3C"
+      responses:
+        200:
+          description: Замка с таким MAC-адресом нет в БД
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status_code: 
+                    type: integer
+                    format: int64
+                    example: 200
+                  response:
+                    type: boolean
+                    example: true
+        400:
+          description: Переданные параметры не прошли валидацию
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        401:
+          description: Ошибка авторизации
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        409:
+          description: Замок с таким MAC-адресом уже есть в БД
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        500:
+          description: Неизвестная серверная ошибка
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+      security:
+        - access_token: []        
+
   /device/{deviceId}:
     parameters:
       - $ref: "#/components/parameters/deviceId"
