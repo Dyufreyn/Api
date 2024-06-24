@@ -1155,6 +1155,12 @@ paths:
       summary: Удалить замок
       description: Метод для удаления замка
       operationId: deleteDeviceById
+      parameters:
+        - in: query
+          name: force
+          description: Флаг для удаления замка без открытия  (любое значение в этом параметре = true)
+          schema:
+            type: boolean
       responses:
         200:
           description: Успешно
