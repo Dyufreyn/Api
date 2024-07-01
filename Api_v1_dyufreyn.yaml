@@ -112,6 +112,7 @@ paths:
               example: 
                 status_code: 409
                 error: Данная почта уже используется
+                
         '500':
           description: Внутренняя ошибка сервера
           content:
@@ -164,6 +165,15 @@ paths:
               example: 
                 status_code: 401
                 error: Неверный логин или пароль
+        '409':
+          description: Неудачная аутентификация (неподтвержден аккаунт)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example: 
+                status_code: 409
+                error: Account is not confirmed
         '500':
           description: Внутренняя ошибка сервера
           content:
